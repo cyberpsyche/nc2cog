@@ -59,6 +59,12 @@ def main(
         # Override config with CLI options if provided
         if compression != 'deflate':
             config_manager.config['compression'] = compression
+        if zlevel != 6:
+            config_manager.config['zlevel'] = zlevel
+        if block_size != 256:
+            config_manager.config['block_size'] = [block_size, block_size]
+        if resampling != 'nearest':
+            config_manager.config['overviews']['resampling'] = resampling
         if tile_size != 512:
             config_manager.config['tile_size'] = [tile_size, tile_size]
         if overwrite:

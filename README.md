@@ -159,17 +159,28 @@ nc2cog large_dataset/ output/ \
 
 ## 📄 License
 
-[MIT License](LICENSE)
+MIT License
 
 ## 🐛 Issues
 
-Report issues on [GitHub Issues](link-to-issues).
+Report issues on the GitHub repository.
 
 ## 📚 Documentation
 
 For more detailed documentation:
 - [User Guide](docs/user_guide.md)
 - [GDAL Optimization Details](docs/gdal_optimization.md)
+- [Usage Examples](docs/examples.md)
+- [Installation Guide](INSTALLATION.md)
+- [Project Structure](docs/project_structure.md)
+
+## ℹ️ Additional Information
+
+### Overview Level Generation
+
+When using `--overview-levels`, note that GDAL intelligently determines which overview levels to actually create based on the source image size. For smaller images, GDAL may generate fewer overview levels than specified to avoid creating overly small and potentially useless overviews.
+
+For example, with `--overview-levels 2,4,8,16,32` on a 1781x1572 image, GDAL may only generate levels 2 and 4 (890x786 and 445x393 pixels respectively) as the smaller levels would be too small to be useful.
 
 ---
 

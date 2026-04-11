@@ -21,6 +21,7 @@ from .errors import NC2COGError
 @click.option('--block-size', type=int, default=256, help='Block size for compression (default: 256)')
 @click.option('--resampling', type=click.Choice(['nearest', 'bilinear', 'cubic', 'average', 'mode', 'gauss', 'rms']), default='nearest', help='Resampling method for overviews (default: nearest)')
 @click.option('--tile-size', type=int, default=512, help='Tile size for COG (default: 512)')
+@click.option('--overview-levels', default='2,4,8,16', help='Overview levels for pyramid structure, comma-separated (default: 2,4,8,16)')
 @click.option('--overwrite', is_flag=True, help='Overwrite existing output files')
 @click.option('--dry-run', is_flag=True, help='Show what would be processed without doing it')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose logging')
@@ -35,6 +36,7 @@ def main(
     block_size: int,
     resampling: str,
     tile_size: int,
+    overview_levels: str,
     overwrite: bool,
     dry_run: bool,
     verbose: bool,
@@ -67,6 +69,10 @@ def main(
             config_manager.config['overviews']['resampling'] = resampling
         if tile_size != 512:
             config_manager.config['tile_size'] = [tile_size, tile_size]
+        # Parse overview levels from comma-separated string and convert to list of ints
+        if overview_levels != '2,4,8,16':
+            levels_list = [int(x.strip()) for x in overview_levels.split(',')]
+            config_manager.config['overviews']['levels'] = levels_list
         if overwrite:
             config_manager.config['overwrite'] = True
 

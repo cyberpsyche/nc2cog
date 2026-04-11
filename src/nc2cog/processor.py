@@ -78,6 +78,7 @@ class ProcessingEngine:
             overviews = self.config.get('overviews', {})
 
             # Prepare creation options for intermediate GeoTIFF
+            # Remove COPY_SRC_OVERVIEWS=YES to avoid conflicts with manual overview building
             creation_options = [
                 f'COMPRESS={compression.upper()}',
                 f'TILED=YES',
@@ -85,7 +86,6 @@ class ProcessingEngine:
                 f'TILEHEIGHT={tile_size[1]}',
                 f'BLOCKXSIZE={block_size[0]}',
                 f'BLOCKYSIZE={block_size[1]}',
-                'COPY_SRC_OVERVIEWS=YES',
                 'BIGTIFF=IF_SAFER'
             ]
 
@@ -113,15 +113,19 @@ class ProcessingEngine:
 
                         # Build overview pyramid
                         temp_dataset.BuildOverviews(resampling, levels)
-                        temp_dataset = None  # Close dataset
+                        temp_dataset = None  # Properly close dataset to release file handle
 
-                # Convert to COG format
+                # Convert to COG format - handle overviews properly in COG creation
                 cog_creation_options = [
                     f'COMPRESS={compression.upper()}',
-                    f'TILED=YES',
-                    f'COPY_SRC_OVERVIEWS=YES',
+                    f'BLOCKSIZE={block_size[0]}',
                     f'BIGTIFF=IF_SAFER'
                 ]
+
+                # If overviews were built, make sure they are handled properly in COG
+                if overviews:
+                    # Add overviews to COG creation options
+                    cog_creation_options.append('OVERVIEWS=IGNORE_EXISTING')
 
                 gdal.Translate(
                     str(output_file),

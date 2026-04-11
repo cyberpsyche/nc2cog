@@ -31,6 +31,10 @@ except Exception as e:
     osr = None
     GDAL_AVAILABLE = False
 
+# Initialize GDAL exceptions for better error handling if GDAL is available
+if GDAL_AVAILABLE:
+    gdal.UseExceptions()
+
 
 class ProcessingEngine:
     """Core processing engine for converting netCDF to COG TIFF."""

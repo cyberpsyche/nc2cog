@@ -82,14 +82,13 @@ class ProcessingEngine:
             overviews = self.config.get('overviews', {})
 
             # Prepare creation options for intermediate GeoTIFF
+            # Note: GTiff driver doesn't support TILEWIDTH/TILEHEIGHT, use BLOCKXSIZE/BLOCKYSIZE instead
             # Remove COPY_SRC_OVERVIEWS=YES to avoid conflicts with manual overview building
             creation_options = [
                 f'COMPRESS={compression.upper()}',
                 f'TILED=YES',
-                f'TILEWIDTH={tile_size[0]}',
-                f'TILEHEIGHT={tile_size[1]}',
-                f'BLOCKXSIZE={block_size[0]}',
-                f'BLOCKYSIZE={block_size[1]}',
+                f'BLOCKXSIZE={tile_size[0]}',  # Use BLOCKXSIZE/BLOCKYSIZE instead of TILEWIDTH/TILEHEIGHT for GTiff
+                f'BLOCKYSIZE={tile_size[1]}',
                 'BIGTIFF=IF_SAFER'
             ]
 
@@ -122,7 +121,8 @@ class ProcessingEngine:
                 # Convert to COG format - handle overviews properly in COG creation
                 cog_creation_options = [
                     f'COMPRESS={compression.upper()}',
-                    f'BLOCKSIZE={block_size[0]}',
+                    f'BLOCKXSIZE={tile_size[0]}',
+                    f'BLOCKYSIZE={tile_size[1]}',
                     f'BIGTIFF=IF_SAFER'
                 ]
 

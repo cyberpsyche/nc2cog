@@ -1,41 +1,176 @@
-# netCDF to COG TIFF Converter
+# nc2cog - netCDF to Cloud-Optimized GeoTIFF Converter
 
-A command-line tool for batch converting netCDF files to Cloud-Optimized GeoTIFF format.
+Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression and performance settings.
 
-## Installation
+## 🚀 Features
+
+- **Format Conversion**: Convert netCDF files to Cloud-Optimized GeoTIFF (COG)
+- **Batch Processing**: Process entire directories of netCDF files
+- **Advanced Compression**: Support for deflate, lzw, and jpeg compression with configurable levels
+- **Performance Optimization**: Configurable tile and block sizes for optimal performance
+- **Pyramid Structure**: Customizable overview (pyramid) levels for multi-scale access
+- **GDAL Optimized**: Eliminated GDAL warnings and optimized driver-specific parameters
+- **Parallel Processing**: Multi-threaded conversion for faster processing
+- **Resume Capability**: Resume interrupted conversions
+
+## 📋 Requirements
+
+- Python 3.7+
+- GDAL library with Python bindings
+- click library for CLI handling
+- numpy for numerical operations
+
+## 🛠️ Installation
 
 ```bash
-pip install -e .
+# Clone the repository
+git clone <repository-url>
+cd nc2cog
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install GDAL
+# On macOS: brew install gdal
+# On Ubuntu: sudo apt-get install gdal-bin libgdal-dev
+# On Windows: Use OSGeo4W installer
 ```
 
-## Usage
+## 🚀 Quick Start
 
+### Basic Usage
+
+Convert a single netCDF file:
 ```bash
-nc2cog /path/to/input/dir /path/to/output/dir
+nc2cog input.nc output/
 ```
 
-### Advanced Options
-
-The tool supports several CLI parameters for fine-tuning the conversion process:
-
-- `--zlevel`: Compression level (1-9) for deflate compression, where higher values mean better compression but slower processing
-- `--block-size`: Block size for compression (default: 256), affecting memory usage and compression efficiency
-- `--tile-size`: Tile size for COG (default: 512), affecting performance and memory usage during access
-- `--resampling`: Resampling method for overviews (default: nearest), options include nearest, bilinear, cubic, average, mode, gauss, and rms
-
-Examples:
+Convert all netCDF files in a directory:
 ```bash
-# High compression level
-nc2cog --compression deflate --zlevel 9 /path/to/input /path/to/output
-
-# Custom block and tile sizes for performance tuning  
-nc2cog --block-size 512 --tile-size 1024 /path/to/input /path/to/output
-
-# High-quality overview resampling
-nc2cog --resampling cubic /path/to/input /path/to/output
-
-# Combine multiple parameters
-nc2cog --zlevel 8 --tile-size 1024 --block-size 512 --resampling cubic /path/to/input /path/to/output
+nc2cog input_dir/ output/
 ```
 
-For detailed usage, see the [User Manual](docs/user_manual.md).
+### Advanced Usage
+
+With custom compression and performance settings:
+```bash
+nc2cog input.nc output/ \
+  --compression deflate \
+  --zlevel 9 \
+  --tile-size 1024 \
+  --block-size 512 \
+  --resampling cubic \
+  --overview-levels 2,4,8,16,32
+```
+
+With parallel processing:
+```bash
+nc2cog input_dir/ output/ --threads 4
+```
+
+## ⚙️ Command Line Options
+
+### Compression Options
+- `--compression` [deflate|lzw|jpeg]: Choose compression algorithm
+- `--zlevel` [1-9]: Set compression level for deflate (default: 6)
+
+### Performance Options
+- `--tile-size` INTEGER: Tile size for COG (default: 512)
+- `--block-size` INTEGER: Block size for compression (default: 256)
+
+### Pyramid/Overview Options
+- `--resampling` [nearest|bilinear|cubic|...]: Resampling method for overviews (default: nearest)
+- `--overview-levels` TEXT: Overview levels (comma-separated, default: 2,4,8,16)
+
+### General Options
+- `--overwrite`: Overwrite existing output files
+- `--dry-run`: Show what would be processed without doing it
+- `--verbose`, `-v`: Enable verbose logging
+- `--resume`: Resume from last processed file
+- `--threads` INTEGER: Number of parallel processing threads (default: 1)
+
+## 🔧 Configuration File
+
+Create a `config.yaml` for complex setups:
+
+```yaml
+# Processing parameters
+compression: "deflate"
+zlevel: 6
+tile_size: [512, 512]
+block_size: [256, 256]
+
+# Output options
+overviews:
+  resampling: "nearest"
+  levels: [2, 4, 8, 16]
+
+# Processing control
+overwrite: false
+skip_errors: true
+```
+
+Use with: `nc2cog --config config.yaml input.nc output/`
+
+## 📊 GDAL Optimization
+
+This tool eliminates common GDAL warnings by using driver-appropriate parameters:
+
+- **GTiff driver**: Uses `BLOCKXSIZE`/`BLOCKYSIZE` instead of `TILEWIDTH`/`TILEHEIGHT`
+- **COG driver**: Uses `BLOCKSIZE` instead of `BLOCKXSIZE`/`BLOCKYSIZE`
+- **Overview handling**: Optimized to avoid `COPY_SRC_OVERVIEWS` conflicts
+
+## 🎯 Use Cases
+
+### Climate/Meteorological Data
+```bash
+nc2cog climate_data.nc output/ \
+  --compression deflate \
+  --zlevel 9 \
+  --resampling cubic \
+  --overview-levels 2,4,8,16,32
+```
+
+### Oceanographic Data
+```bash
+nc2cog ocean_data.nc output/ \
+  --compression lzw \
+  --tile-size 1024 \
+  --resampling bilinear \
+  --overview-levels 2,4,8
+```
+
+### Large Dataset Processing
+```bash
+nc2cog large_dataset/ output/ \
+  --threads 4 \
+  --compression deflate \
+  --zlevel 7 \
+  --tile-size 512
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+[MIT License](LICENSE)
+
+## 🐛 Issues
+
+Report issues on [GitHub Issues](link-to-issues).
+
+## 📚 Documentation
+
+For more detailed documentation:
+- [User Guide](docs/user_guide.md)
+- [GDAL Optimization Details](docs/gdal_optimization.md)
+
+---
+
+Made with ❤️ for the geospatial community.

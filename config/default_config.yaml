@@ -1,0 +1,22 @@
+# Default configuration for netCDF to COG TIFF converter
+
+# Processing parameters
+compression: "deflate"
+zlevel: 6
+tile_size: [512, 512]
+block_size: [256, 256]
+
+# Output options
+overviews:
+  resampling: "nearest"
+  levels: [2, 4, 8, 16]
+
+# Variables to process (if multi-band output needed)
+variables: []
+
+# Spatial options
+spatial_subset: null
+
+# Processing control
+overwrite: false
+skip_errors: true

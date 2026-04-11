@@ -191,3 +191,7 @@ iTunesDB
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
+
+# Claude Code
+.claude/
+

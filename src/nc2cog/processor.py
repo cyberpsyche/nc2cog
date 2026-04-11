@@ -119,10 +119,10 @@ class ProcessingEngine:
                         temp_dataset = None  # Properly close dataset to release file handle
 
                 # Convert to COG format - handle overviews properly in COG creation
+                # Note: COG driver supports different parameters than GTiff
                 cog_creation_options = [
                     f'COMPRESS={compression.upper()}',
-                    f'BLOCKXSIZE={tile_size[0]}',
-                    f'BLOCKYSIZE={tile_size[1]}',
+                    f'BLOCKSIZE={max(tile_size[0], tile_size[1])}',  # Use BLOCKSIZE for COG driver
                     f'BIGTIFF=IF_SAFER'
                 ]
 

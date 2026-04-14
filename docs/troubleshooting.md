@@ -52,6 +52,14 @@ gdalinfo /path/to/file.nc
 - Cause: Configuration file contains invalid values
 - Solution: Check the configuration against the configuration guide
 
+### "Reprojection failed for [file]"
+- Cause: The projection parameters may be incorrect or incompatible
+- Solution: Verify that your EPSG codes are valid and that the GDAL installation supports the specified projections. You can test projections using GDAL tools directly.
+
+### "No source projection found for [file]"
+- Cause: When using only `--dst-proj` without `--src-proj`, the converter couldn't detect a projection in the source file
+- Solution: Explicitly specify the source projection using `--src-proj`, or verify that the input file contains projection information.
+
 ## Performance Tips
 
 ### Optimizing Speed

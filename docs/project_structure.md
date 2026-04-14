@@ -20,7 +20,9 @@ nc2cog/
 │   ├── examples.md          # 使用示例
 │   ├── configuration_guide.md # 配置指南 (原)
 │   ├── troubleshooting.md     # 故障排除 (原)
-│   └── user_manual.md        # 用户手册 (原)
+│   ├── user_manual.md        # 用户手册 (原)
+│   ├── projection_feature_usage.md # 投影功能使用说明
+│   └── completion_summary.md # 项目完成总结
 ├── src/                      # 源代码目录
 │   └── nc2cog/               # 主要组件
 │       ├── __init__.py       # 包初始化
@@ -59,6 +61,7 @@ nc2cog/
    - YAML配置文件处理
    - 参数验证和合并
    - 默认值管理
+   - 投影参数配置支持
 
 ### 文档说明
 
@@ -67,12 +70,14 @@ nc2cog/
    - `docs/user_guide.md`: 详细用户指南
    - `docs/gdal_optimization.md`: GDAL优化技术细节
    - `docs/examples.md`: 使用示例集合
+   - `docs/projection_feature_usage.md`: 投影功能使用说明
 
 2. **辅助文档**:
    - `USAGE_EXAMPLE.md`: 原始使用示例
    - `docs/configuration_guide.md`: 原始配置指南
    - `docs/user_manual.md`: 原始用户手册
    - `docs/troubleshooting.md`: 原始故障排除
+   - `docs/completion_summary.md`: 项目完成总结
 
 ## 特色功能
 
@@ -86,6 +91,7 @@ nc2cog/
 - `--overview-levels`: 概览层级自定义
 - `--resampling`: 重采样方法选择
 - 性能相关参数（tile-size, block-size等）
+- 投影参数（--src-proj, --dst-proj）用于坐标系重投影
 
 ### 3. 批量处理
 - 目录递归处理
@@ -99,6 +105,7 @@ nc2cog/
 2. 新增概览层级控制参数
 3. 改进的错误处理机制
 4. 更好的配置管理
+5. 新增投影转换功能，支持坐标系重投影
 
 ### 代码规范
 - 使用Python类型提示

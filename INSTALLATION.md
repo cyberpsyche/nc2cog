@@ -102,6 +102,12 @@ nc2cog input.nc output/ \
   --block-size 512 \
   --resampling cubic \
   --overview-levels 2,4,8,16,32
+
+# With reprojection
+nc2cog input.nc output/ \
+  --src-proj EPSG:4326 \
+  --dst-proj EPSG:3857 \
+  --resampling bilinear
 ```
 
 ## Available Command Line Parameters
@@ -129,6 +135,8 @@ nc2cog input.nc output/ \
 - `--verbose, -v`: Enable verbose logging
 - `--resume`: Resume from last processed file
 - `--threads`: Number of parallel processing threads (default: 1)
+- `--src-proj`: Source projection in EPSG format (e.g., EPSG:4326)
+- `--dst-proj`: Target projection in EPSG format (e.g., EPSG:3857)
 
 ## Configuration File Example
 
@@ -142,6 +150,12 @@ tile_size: [512, 512]
 block_size: [256, 256]
 
 # Output options
+
+# Projection parameters
+projection:
+  source: "EPSG:4326"  # Source projection (optional, auto-detected if not specified)
+  target: "EPSG:3857"  # Target projection (required for reprojection)
+  resampling_method: "nearest"  # Resampling method for reprojection
 overviews:
   resampling: "nearest"
   levels: [2, 4, 8, 16]

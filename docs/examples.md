@@ -129,6 +129,53 @@ nc2cog input.nc output/ --overwrite
 nc2cog input.nc output/ --verbose
 ```
 
+## 投影转换示例
+
+### 基本重投影
+```bash
+# 将WGS84坐标系转换为Web Mercator投影
+nc2cog input.nc output/ --src-proj EPSG:4326 --dst-proj EPSG:3857
+```
+
+### 自动检测源投影
+```bash
+# 指定目标投影，源投影从文件中自动检测
+nc2cog input.nc output/ --dst-proj EPSG:3857
+```
+
+### 投影转换与其他参数结合
+```bash
+# 重投影结合高压缩比和高质量概览
+nc2cog input.nc output/ \
+  --src-proj EPSG:4326 \
+  --dst-proj EPSG:3857 \
+  --compression deflate \
+  --zlevel 9 \
+  --resampling cubic \
+  --overview-levels 2,4,8,16,32
+```
+
+### 气象数据重投影
+```bash
+# 将WGS84的气象数据转换为适用于Web发布的Web Mercator投影
+nc2cog climate_data.nc output/ \
+  --src-proj EPSG:4326 \
+  --dst-proj EPSG:3857 \
+  --compression deflate \
+  --zlevel 8 \
+  --resampling bilinear
+```
+
+### 海洋数据重投影
+```bash
+# 将海洋数据从WGS84转换为更适合极地地区的极地立体投影
+nc2cog ocean_data.nc output/ \
+  --src-proj EPSG:4326 \
+  --dst-proj EPSG:3411 \
+  --compression lzw \
+  --resampling cubic
+```
+
 ## 针对不同数据类型的建议配置
 
 ### 气象/气候数据

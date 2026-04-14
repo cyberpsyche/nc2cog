@@ -12,6 +12,7 @@ Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression
 - **GDAL Optimized**: Eliminated GDAL warnings and optimized driver-specific parameters
 - **Parallel Processing**: Multi-threaded conversion for faster processing
 - **Resume Capability**: Resume interrupted conversions
+- **Projection Transformation**: Reproject data from source to target coordinate systems during conversion
 
 ## 📋 Requirements
 
@@ -88,6 +89,8 @@ nc2cog input_dir/ output/ --threads 4
 - `--verbose`, `-v`: Enable verbose logging
 - `--resume`: Resume from last processed file
 - `--threads` INTEGER: Number of parallel processing threads (default: 1)
+- `--src-proj` TEXT: Source projection in EPSG format (e.g., EPSG:4326)
+- `--dst-proj` TEXT: Target projection in EPSG format (e.g., EPSG:3857)
 
 ## 🔧 Configuration File
 
@@ -122,31 +125,26 @@ This tool eliminates common GDAL warnings by using driver-appropriate parameters
 
 ## 🎯 Use Cases
 
-### Climate/Meteorological Data
+### Projection Transformations
+With the new projection support, you can transform coordinate systems during conversion:
+
+Convert with reprojection from WGS84 to Web Mercator:
 ```bash
-nc2cog climate_data.nc output/ \
+nc2cog --src-proj EPSG:4326 --dst-proj EPSG:3857 input.nc output/
+```
+
+Or specify only target projection (source will be detected automatically):
+```bash
+nc2cog --dst-proj EPSG:3857 input.nc output/
+```
+
+Combine with other conversion options:
+```bash
+nc2cog --src-proj EPSG:4326 --dst-proj EPSG:3857 \
   --compression deflate \
   --zlevel 9 \
-  --resampling cubic \
-  --overview-levels 2,4,8,16,32
-```
-
-### Oceanographic Data
-```bash
-nc2cog ocean_data.nc output/ \
-  --compression lzw \
   --tile-size 1024 \
-  --resampling bilinear \
-  --overview-levels 2,4,8
-```
-
-### Large Dataset Processing
-```bash
-nc2cog large_dataset/ output/ \
-  --threads 4 \
-  --compression deflate \
-  --zlevel 7 \
-  --tile-size 512
+  input.nc output/
 ```
 
 ## 🤝 Contributing

@@ -38,6 +38,8 @@ nc2cog /path/to/input/file.nc /path/to/output/directory/
 - `--verbose, -v`: Enable verbose logging
 - `--resume`: Resume from last processed file
 - `--threads N`: Number of parallel processing threads
+- `--src-proj TEXT`: Source projection in EPSG format (e.g., EPSG:4326)
+- `--dst-proj TEXT`: Target projection in EPSG format (e.g., EPSG:3857)
 
 ## Examples
 
@@ -59,6 +61,23 @@ nc2cog --dry-run /input/dir /output/dir
 ### Resume interrupted processing
 ```bash
 nc2cog --resume /input/dir /output/dir
+```
+
+### Projection Transformation Examples
+
+Convert with reprojection from WGS84 to Web Mercator:
+```bash
+nc2cog --src-proj EPSG:4326 --dst-proj EPSG:3857 /input/file.nc /output/dir/
+```
+
+Specify only target projection (source will be detected automatically):
+```bash
+nc2cog --dst-proj EPSG:3857 /input/file.nc /output/dir/
+```
+
+Combine reprojection with other options:
+```bash
+nc2cog --src-proj EPSG:4326 --dst-proj EPSG:3857 --compression lzw --verbose /input/file.nc /output/dir/
 ```
 
 ## Configuration

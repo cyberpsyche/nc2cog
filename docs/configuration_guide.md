@@ -18,6 +18,12 @@ The converter can be customized using a YAML configuration file. You can either 
 - `overviews.resampling`: Resampling method for overviews. Options: `nearest`, `average`, `gauss`, `cubic`, `lanczos`
 - `overviews.levels`: Array of overview levels to generate (e.g., [2, 4, 8, 16])
 
+### Projection Parameters
+
+- `projection.source`: Source projection in EPSG format (e.g., `"EPSG:4326"`)
+- `projection.target`: Target projection in EPSG format (e.g., `"EPSG:3857"`)
+- `projection.resampling_method`: Resampling method for reprojection (e.g., `"nearest"`, `"bilinear"`)
+
 ### Processing Control
 
 - `overwrite`: Boolean. Whether to overwrite existing output files
@@ -61,11 +67,17 @@ nc2cog --config /path/to/my_config.yaml /input/dir /output/dir
 ## Example Custom Configuration
 
 ```yaml
-# Custom configuration for high-quality compression
+# Custom configuration for high-quality compression with reprojection
 compression: "deflate"
 zlevel: 9  # Maximum compression
 tile_size: [1024, 1024]  # Larger tiles for better performance
 block_size: [512, 512]
+
+# Projection parameters
+projection:
+  source: "EPSG:4326"  # WGS84
+  target: "EPSG:3857"  # Web Mercator
+  resampling_method: "bilinear"  # Better quality reprojection
 
 overviews:
   resampling: "cubic"  # Higher quality resampling

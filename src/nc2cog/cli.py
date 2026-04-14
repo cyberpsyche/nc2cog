@@ -27,6 +27,8 @@ from .errors import NC2COGError
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose logging')
 @click.option('--resume', is_flag=True, help='Resume from last processed file')
 @click.option('--threads', type=int, default=1, help='Number of parallel processing threads')
+@click.option('--src-proj', type=str, help='Source projection in EPSG format (e.g., EPSG:4326)')
+@click.option('--dst-proj', type=str, help='Target projection in EPSG format (e.g., EPSG:3857)')
 def main(
     input_path: str,
     output_path: str,
@@ -41,7 +43,9 @@ def main(
     dry_run: bool,
     verbose: bool,
     resume: bool,
-    threads: int
+    threads: int,
+    src_proj: Optional[str],
+    dst_proj: Optional[str]
 ) -> None:
     """
     Convert netCDF files to Cloud-Optimized GeoTIFF format.
@@ -75,6 +79,14 @@ def main(
             config_manager.config['overviews']['levels'] = levels_list
         if overwrite:
             config_manager.config['overwrite'] = True
+
+        # Handle projection parameters
+        if dst_proj:
+            config_manager.config['projection'] = config_manager.config.get('projection', {})
+            config_manager.config['projection']['target'] = dst_proj
+        if src_proj:
+            config_manager.config['projection'] = config_manager.config.get('projection', {})
+            config_manager.config['projection']['source'] = src_proj
 
         # Validate configuration
         config_manager.validate()

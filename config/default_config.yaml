@@ -6,6 +6,9 @@ zlevel: 6
 tile_size: [512, 512]
 block_size: [256, 256]
 
+# Projection parameters (disabled by default)
+projection: null
+
 # Output options
 overviews:
   resampling: "nearest"

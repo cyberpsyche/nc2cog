@@ -122,3 +122,37 @@ class ConfigManager:
         valid_resampling_methods = ['nearest', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'average', 'mode']
         if resampling not in valid_resampling_methods:
             raise ConfigError(f"Invalid resampling method: {resampling}. Valid options: {valid_resampling_methods}")
+
+        # Projection parameters validation
+        source_projection = self.get('projection.source', None)
+        target_projection = self.get('projection.target', None)
+        resampling_method = self.get('projection.resampling_method', 'nearest')
+
+        if source_projection is not None:
+            # Validate source projection format (expecting EPSG:XXXX format)
+            if not isinstance(source_projection, str) or not source_projection.upper().startswith('EPSG:'):
+                raise ConfigError(f"Invalid source projection format: {source_projection}. Expected format: 'EPSG:XXXX'")
+
+            # Validate EPSG code structure (should be EPSG:number)
+            try:
+                epsg_code = source_projection.split(':')[1]
+                int(epsg_code)  # Verify it's a valid integer
+            except (IndexError, ValueError):
+                raise ConfigError(f"Invalid source EPSG code: {source_projection}. Expected format: 'EPSG:XXXX' where XXXX is a number")
+
+        if target_projection is not None:
+            # Validate target projection format (expecting EPSG:XXXX format)
+            if not isinstance(target_projection, str) or not target_projection.upper().startswith('EPSG:'):
+                raise ConfigError(f"Invalid target projection format: {target_projection}. Expected format: 'EPSG:XXXX'")
+
+            # Validate EPSG code structure (should be EPSG:number)
+            try:
+                epsg_code = target_projection.split(':')[1]
+                int(epsg_code)  # Verify it's a valid integer
+            except (IndexError, ValueError):
+                raise ConfigError(f"Invalid target EPSG code: {target_projection}. Expected format: 'EPSG:XXXX' where XXXX is a number")
+
+        # Validate reprojection resampling method
+        valid_reprojection_methods = ['nearest', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'average', 'mode', 'max', 'min', 'med', 'q1', 'q3']
+        if resampling_method not in valid_reprojection_methods:
+            raise ConfigError(f"Invalid reprojection resampling method: {resampling_method}. Valid options: {valid_reprojection_methods}")

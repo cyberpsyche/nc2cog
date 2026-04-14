@@ -1,0 +1,23 @@
+# 示例配置文件，演示如何使用投影参数
+# config_with_projection.yaml
+
+# 处理参数
+compression: "deflate"
+zlevel: 8
+tile_size: [512, 512]
+block_size: [256, 256]
+
+# 投影参数
+projection:
+  source: "EPSG:4326"      # 源投影 (WGS84)
+  target: "EPSG:3857"      # 目标投影 (Web Mercator)
+  resampling_method: "bilinear"  # 重投影时使用的重采样方法
+
+# 输出选项
+overviews:
+  resampling: "cubic"
+  levels: [2, 4, 8, 16, 32]
+
+# 处理控制
+overwrite: false
+skip_errors: true

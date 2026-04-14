@@ -125,6 +125,33 @@ This tool eliminates common GDAL warnings by using driver-appropriate parameters
 
 ## 🎯 Use Cases
 
+### Climate/Meteorological Data
+```bash
+nc2cog climate_data.nc output/ \
+  --compression deflate \
+  --zlevel 9 \
+  --resampling cubic \
+  --overview-levels 2,4,8,16,32
+```
+
+### Oceanographic Data
+```bash
+nc2cog ocean_data.nc output/ \
+  --compression lzw \
+  --tile-size 1024 \
+  --resampling bilinear \
+  --overview-levels 2,4,8
+```
+
+### Large Dataset Processing
+```bash
+nc2cog large_dataset/ output/ \
+  --threads 4 \
+  --compression deflate \
+  --zlevel 7 \
+  --tile-size 512
+```
+
 ### Projection Transformations
 With the new projection support, you can transform coordinate systems during conversion:
 

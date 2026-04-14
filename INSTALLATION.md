@@ -142,30 +142,30 @@ nc2cog input.nc output/ \
 
 Create `config.yaml`:
 
-```yaml
-# Processing parameters
-compression: "deflate"
-zlevel: 6
-tile_size: [512, 512]
-block_size: [256, 256]
+	```yaml
+	# Processing parameters
+	compression: "deflate"
+	zlevel: 6
+	tile_size: [512, 512]
+	block_size: [256, 256]
 
-# Output options
+	# Projection parameters
+	projection:
+	  source: "EPSG:4326"  # Source projection (optional, auto-detected if not specified)
+	  target: "EPSG:3857"  # Target projection (required for reprojection)
+	  resampling_method: "nearest"  # Resampling method for reprojection
 
-# Projection parameters
-projection:
-  source: "EPSG:4326"  # Source projection (optional, auto-detected if not specified)
-  target: "EPSG:3857"  # Target projection (required for reprojection)
-  resampling_method: "nearest"  # Resampling method for reprojection
-overviews:
-  resampling: "nearest"
-  levels: [2, 4, 8, 16]
+	# Output options
+	overviews:
+	  resampling: "nearest"
+	  levels: [2, 4, 8, 16]
 
-# Processing control
-overwrite: false
-skip_errors: true
-```
+	# Processing control
+	overwrite: false
+	skip_errors: true
+	```
 
-Use with: `nc2cog --config config.yaml input.nc output/`
+	Use with: `nc2cog --config config.yaml input.nc output/`
 
 ## Verification
 

@@ -167,6 +167,12 @@ zlevel: 6
 tile_size: [512, 512]
 block_size: [256, 256]
 
+# 投影参数（可选）
+projection:
+  source: "EPSG:4326"      # 源投影（可选，如果未指定则从输入文件自动检测）
+  target: "EPSG:3857"      # 目标投影（必需，当需要重投影时）
+  resampling_method: "bilinear"  # 重投影时使用的重采样方法
+
 # 输出选项
 overviews:
   resampling: "nearest"

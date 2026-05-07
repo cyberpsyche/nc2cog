@@ -1,6 +1,6 @@
 # nc2cog - netCDF to Cloud-Optimized GeoTIFF Converter
 
-[中文文档](README_zh.md)
+[中文](README_zh.md)
 
 Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression and performance settings.
 

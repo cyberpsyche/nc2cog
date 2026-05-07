@@ -124,6 +124,7 @@ nc2cog input_dir/ output/ --threads 4
 - `--src-proj` TEXT: Source projection in EPSG format (e.g., EPSG:4326)
 - `--dst-proj` TEXT: Target projection in EPSG format (e.g., EPSG:3857)
 - `--variables` TEXT: Variables to convert in multi-dimensional NC files (comma-separated, e.g., `PRE,REF`). If omitted, all data variables are auto-detected.
+- `--version`, `-V`: Show version information and exit.
 
 ## 📁 Output Path Rules
 

@@ -126,6 +126,7 @@ nc2cog input.nc output/ --resume
 - `--threads`: 并行处理线程数，默认: 1
 - `--src-proj`: 源投影定义（EPSG格式，如 EPSG:4326）
 - `--dst-proj`: 目标投影定义（EPSG格式，如 EPSG:3857）
+- `--version`, `-V`：显示版本信息并退出
 
 ## 输出路径规则
 

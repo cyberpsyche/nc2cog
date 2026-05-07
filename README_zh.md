@@ -124,6 +124,7 @@ nc2cog input_dir/ output/ --threads 4
 - `--src-proj` 文本：源投影 EPSG 代码（如 EPSG:4326）
 - `--dst-proj` 文本：目标投影 EPSG 代码（如 EPSG:3857）
 - `--variables` 文本：指定要转换的变量名（逗号分隔，如 `PRE,REF`）。不指定时自动发现所有数据变量
+- `--version`, `-V`：显示版本信息并退出
 
 ## 📁 输出路径规则
 

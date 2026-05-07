@@ -42,6 +42,10 @@ nc2cog --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
 
 ## 常用参数
 ```bash
+# 查看版本
+nc2cog --version
+nc2cog -V
+
 # 高压缩比
 nc2cog input.nc output/ --compression deflate --zlevel 9
 

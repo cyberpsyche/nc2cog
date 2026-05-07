@@ -7,6 +7,7 @@ nc2cog 是一个专门用于将 netCDF 文件转换为 Cloud-Optimized GeoTIFF (
 ## 特性
 
 - **netCDF 转 COG**：将单个或批量的 netCDF 文件转换为 COG 格式
+- **多维文件支持**：自动检测含时间维度和多变量的 NC 文件，按变量输出多波段 COG
 - **GDAL 兼容**：充分利用 GDAL 库的强大功能
 - **高性能**：支持多线程处理和并行转换
 - **高级压缩**：支持多种压缩算法和压缩级别
@@ -38,8 +39,28 @@ pip install -r requirements.txt
 # 转换单个 netCDF 文件
 nc2cog input.nc output/
 
+# 指定输出文件名
+nc2cog input.nc output/my_custom_name.tif
+
 # 转换目录中的所有 netCDF 文件
 nc2cog input_dir/ output/
+```
+
+### 多维 NetCDF 文件
+
+对于含时间维度和多变量的文件，工具自动检测并转换：
+
+```bash
+# 自动发现并转换所有变量（输出到目录）
+nc2cog MPF_V4_20251113144500.nc output/
+# 输出: output/PRE.tif (N bands), output/REF.tif (N bands)
+
+# 指定转换特定变量（输出到目录）
+nc2cog --variables PRE,REF MPF_V4_20251113144500.nc output/
+
+# 指定转换单个变量到具体文件
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
+# 输出: output/MPF_v4_PRE.tif (N bands)
 ```
 
 ### 高级用法
@@ -77,7 +98,7 @@ nc2cog input.nc output/ --resume
 
 ### 主要参数
 - `input_path`: 输入文件路径（文件或目录）
-- `output_path`: 输出目录路径
+- `output_path`: 输出路径（目录或指定文件名的 .tif 文件）
 
 ### 配置参数
 - `--config, -c`: 指定配置文件路径
@@ -94,6 +115,9 @@ nc2cog input.nc output/ --resume
 - `--resampling`: 概览重采样方法（nearest, bilinear, cubic, average, mode, gauss, rms），默认: nearest
 - `--overview-levels`: 概览层级（逗号分隔），默认: 2,4,8,16
 
+### 变量选择（多维文件）
+- `--variables`: 指定要转换的变量名（逗号分隔），如 `PRE,REF`。不指定时自动发现所有数据变量。
+
 ### 其他选项
 - `--overwrite`: 覆盖现有输出文件
 - `--dry-run`: 预演模式，显示将要处理的内容但不实际执行
@@ -102,6 +126,51 @@ nc2cog input.nc output/ --resume
 - `--threads`: 并行处理线程数，默认: 1
 - `--src-proj`: 源投影定义（EPSG格式，如 EPSG:4326）
 - `--dst-proj`: 目标投影定义（EPSG格式，如 EPSG:3857）
+
+## 输出路径规则
+
+`output_path` 参数的行为取决于其格式：
+
+| 输出路径结尾 | 行为 |
+|-------------|------|
+| `.tif` | 直接输出到指定的文件 |
+| `/` 或无扩展名 | 输出到目录（多维文件每变量一个文件） |
+
+示例：
+```bash
+# 目录输出：生成 output/PRE.tif 和 output/REF.tif
+nc2cog MPF_V4_20251113144500.nc output/
+
+# 文件输出：生成指定的文件
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
+```
+
+**注意**：文件输出（`.tif` 结尾）仅适用于单变量转换。如果指定了多个变量但以 `.tif` 结尾，则只转换第一个变量到指定文件。
+
+## 多维 NetCDF 文件处理
+
+### 自动检测机制
+
+当输入是单个 NC 文件时，工具会自动检测其结构：
+- **2D 文件**（如 `var(lat, lon)`）：按原有流程处理，输出单个 COG 文件
+- **多维文件**（含时间维度和/或多个变量）：每个变量输出一个多波段 COG 文件，时间步作为波段
+
+### 输出组织
+
+| NC 结构 | 输出 |
+|---------|------|
+| `var(lat,lon)` | `output.tif` (1 band) |
+| `var(time,lat,lon)` | `output/VAR.tif` (N bands) |
+| `A(time,lat,lon)`, `B(time,lat,lon)` | `A.tif` (N bands) + `B.tif` (N bands) |
+
+### 波段描述
+
+每个输出的 COG 文件的波段包含时间信息：
+```
+Band 1: "time=0, 2025-11-13T06:30:00"
+Band 2: "time=1, 2025-11-13T07:30:00"
+...
+```
 
 ## 参数详细说明
 
@@ -122,7 +191,7 @@ nc2cog input.nc output/ --resume
 **重要说明**：GDAL 会根据原始图像尺寸智能决定实际生成的概览层级。对于较小的图像，某些高层级可能不会被生成，以避免生成过小且无用的概览。
 
 ### --src-proj 和 --dst-proj 投影参数
-这两个新参数允许在转换过程中进行坐标系重投影：
+这两个参数允许在转换过程中进行坐标系重投影：
 
 - `--src-proj`: 源投影定义（可选），格式为 EPSG 代码（如 EPSG:4326）
 - `--dst-proj`: 目标投影定义（必需），格式为 EPSG 代码（如 EPSG:3857）
@@ -131,7 +200,7 @@ nc2cog input.nc output/ --resume
 - 如果未指定 `--src-proj`，系统将尝试从输入文件自动检测源投影
 - 如果指定了 `--src-proj`，系统将使用该投影作为源投影
 - 必须指定 `--dst-proj` 以确定目标投影
-- 重投影发生在净CDF到COG转换的早期阶段，因此所有后续处理（压缩、概览生成等）都将在新投影中进行
+- 重投影发生在 netCDF 到 COG 转换的早期阶段，因此所有后续处理（压缩、概览生成等）都将在新投影中进行
 
 **示例**：
 - `nc2cog --src-proj EPSG:4326 --dst-proj EPSG:3857 input.nc output/`
@@ -221,12 +290,23 @@ nc2cog input.nc output/ --compression lzw --tile-size 1024 --overview-levels 2,4
 nc2cog input.nc output/ --resampling bilinear --overview-levels 2,4,8,16,32
 ```
 
+### 多维气象数据
+```bash
+# 转换多维 NC 文件，指定变量和高质量参数
+nc2cog --variables PRE,REF \
+  --compression deflate \
+  --zlevel 9 \
+  --resampling cubic \
+  MPF_V4_20251113144500.nc output/
+```
+
 ## 故障排除
 
 ### 常见问题
 1. **GDAL 相关错误**: 确保正确安装了 GDAL 及其 Python 绑定
 2. **权限错误**: 确保有输出目录的写入权限
 3. **内存不足**: 对于大文件，考虑减少线程数或增加虚拟内存
+4. **多维文件处理错误**: 确保已安装 netCDF4 库 (`pip install netCDF4`)
 
 ### 性能优化
 - 调整 `--tile-size` 和 `--block-size` 以获得最佳性能
@@ -240,3 +320,4 @@ nc2cog input.nc output/ --resampling bilinear --overview-levels 2,4,8,16,32
 - **处理流程**: netCDF → 中间 GeoTIFF → COG
 - **概览生成**: 使用 GDAL BuildOverviews 方法
 - **压缩**: 支持多种 GDAL 压缩算法
+- **多维支持**: netCDF4 库读取子数据集信息

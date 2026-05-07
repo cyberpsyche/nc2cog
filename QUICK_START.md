@@ -21,8 +21,23 @@ pip install -e .
 # 转换单个文件
 nc2cog input.nc output/
 
+# 指定输出文件名
+nc2cog input.nc output/my_custom_name.tif
+
 # 转换整个目录
 nc2cog input_dir/ output/
+```
+
+## 多维 NetCDF 文件
+```bash
+# 自动检测并转换所有变量（输出到目录）
+nc2cog MPF_V4_20251113144500.nc output/
+
+# 指定转换特定变量（输出到目录）
+nc2cog --variables PRE,REF MPF_V4_20251113144500.nc output/
+
+# 指定转换单个变量到具体文件
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
 ```
 
 ## 常用参数
@@ -41,6 +56,7 @@ nc2cog input.nc output/ --resampling cubic --overview-levels 2,4,8,16
 - `--overview-levels` 指定的层级数不一定全部生成，GDAL会根据源图像大小智能决定
 - 对于较小图像（如1781x1572），指定2,4,8,16,32可能只生成2,4层级
 - 使用 `--dry-run` 参数预览将要执行的操作
+- 多维文件需要安装 netCDF4 库（已在 requirements.txt 中）
 
 ## 示例组合
 ```bash
@@ -51,6 +67,22 @@ nc2cog input.nc output/ \
   --tile-size 512 \
   --resampling cubic \
   --overview-levels 2,4,8,16,32
+
+# 多维文件 + 高质量参数
+nc2cog --variables PRE \
+  --compression deflate \
+  --zlevel 9 \
+  --resampling cubic \
+  --overview-levels 2,4,8,16,32 \
+  MPF_V4_20251113144500.nc output/
+
+# 多维文件 + 指定输出文件
+nc2cog --variables PRE \
+  --compression deflate \
+  --zlevel 9 \
+  --resampling cubic \
+  --overview-levels 2,4,8,16,32 \
+  MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
 
 # 并行处理大数据集
 nc2cog input_dir/ output/ \

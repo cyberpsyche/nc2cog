@@ -13,6 +13,7 @@ Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression
 - **Parallel Processing**: Multi-threaded conversion for faster processing
 - **Resume Capability**: Resume interrupted conversions
 - **Projection Transformation**: Reproject data from source to target coordinate systems during conversion
+- **Flexible Output**: Output to a directory or directly to a specified `.tif` file
 
 ## 📋 Requirements
 
@@ -39,21 +40,49 @@ pip install -r requirements.txt
 
 ## 🚀 Quick Start
 
-### Basic Usage
+### Single File Conversion
 
-Convert a single netCDF file:
+Convert a single netCDF file to COG TIFF:
+
 ```bash
 nc2cog input.nc output/
 ```
 
+Specify the output filename:
+
+```bash
+nc2cog input.nc output/my_custom_name.tif
+```
+
+### Batch Conversion
+
 Convert all netCDF files in a directory:
+
 ```bash
 nc2cog input_dir/ output/
+```
+
+### Multi-dimensional NetCDF Files
+
+For netCDF files containing multiple variables and time dimensions (e.g., `PRE(time, lat, lon)`, `REF(time, lat, lon)`), the tool automatically detects the structure and converts each variable to a separate multi-band COG file, with time steps as bands.
+
+```bash
+# Auto-detect and convert all variables
+nc2cog MPF_V4_20251113144500.nc output/
+# Produces: output/PRE.tif (N bands), output/REF.tif (N bands)
+
+# Convert only specific variables to a directory
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/
+
+# Convert a single variable to a specific output file
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
+# Produces: output/MPF_v4_PRE.tif (N bands, each band is a time step)
 ```
 
 ### Advanced Usage
 
 With custom compression and performance settings:
+
 ```bash
 nc2cog input.nc output/ \
   --compression deflate \
@@ -65,6 +94,7 @@ nc2cog input.nc output/ \
 ```
 
 With parallel processing:
+
 ```bash
 nc2cog input_dir/ output/ --threads 4
 ```
@@ -91,6 +121,27 @@ nc2cog input_dir/ output/ --threads 4
 - `--threads` INTEGER: Number of parallel processing threads (default: 1)
 - `--src-proj` TEXT: Source projection in EPSG format (e.g., EPSG:4326)
 - `--dst-proj` TEXT: Target projection in EPSG format (e.g., EPSG:3857)
+- `--variables` TEXT: Variables to convert in multi-dimensional NC files (comma-separated, e.g., `PRE,REF`). If omitted, all data variables are auto-detected.
+
+## 📁 Output Path Rules
+
+The behavior of the `output_path` argument depends on its format:
+
+| Output path ends with | Behavior |
+|-----------------------|----------|
+| `.tif` | Output to the specified file directly |
+| `/` or no extension | Output to a directory (one file per variable for multi-dim) |
+
+Examples:
+```bash
+# Directory output: creates output/PRE.tif and output/REF.tif
+nc2cog MPF_V4_20251113144500.nc output/
+
+# File output: creates the exact file specified
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
+```
+
+**Note**: File output (`.tif` ending) only works when converting a single variable. If multiple variables are specified with a `.tif` output path, only the first variable will be converted.
 
 ## 🔧 Configuration File
 

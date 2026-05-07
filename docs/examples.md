@@ -7,9 +7,59 @@
 nc2cog input.nc output/
 ```
 
+### 指定输出文件名
+```bash
+nc2cog input.nc output/my_custom_name.tif
+```
+
 ### 转换整个目录
 ```bash
 nc2cog input_dir/ output/
+```
+
+## 多维 NetCDF 文件转换
+
+当输入文件包含多个变量和时间维度（如 `PRE(time, lat, lon)`, `REF(time, lat, lon)`）时，工具会自动检测并将其转换为多波段 COG 文件，每个变量一个文件，时间步作为波段。
+
+### 自动发现所有变量
+```bash
+nc2cog MPF_V4_20251113144500.nc output/
+# 输出: output/PRE.tif (10 bands), output/REF.tif (10 bands)
+```
+
+### 指定转换特定变量
+```bash
+# 仅转换 PRE 变量（输出到目录）
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/
+
+# 转换多个变量（输出到目录）
+nc2cog --variables PRE,REF MPF_V4_20251113144500.nc output/
+
+# 转换单个变量到指定文件
+nc2cog --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
+```
+
+### 输出文件结构
+每个输出的 COG 文件包含：
+- **波段 1**: `time=0, 2025-11-13T06:30:00`
+- **波段 2**: `time=1, 2025-11-13T07:30:00`
+- **...**
+- **波段 N**: `time=N-1, YYYY-MM-DDTHH:MM:SS`
+
+### 预览多维转换（dry-run）
+```bash
+# 目录模式预览
+nc2cog --dry-run MPF_V4_20251113144500.nc output/
+# 输出示例:
+# Multi-dimensional mode: converting variables: PRE, REF
+#   PRE -> output/PRE.tif
+#   REF -> output/REF.tif
+
+# 文件模式预览
+nc2cog --dry-run --variables PRE MPF_V4_20251113144500.nc output/MPF_v4_PRE.tif
+# 输出示例:
+# Multi-dimensional mode: converting variables: PRE
+#   Output: output/MPF_v4_PRE.tif (variable: PRE)
 ```
 
 ## 压缩选项
@@ -83,6 +133,16 @@ nc2cog input.nc output/ \
   --overview-levels 2,4,8,16,32
 ```
 
+### 多维文件 + 高级参数
+```bash
+# 转换多维 NC 文件并指定压缩和概览参数
+nc2cog --variables PRE \
+  --compression deflate \
+  --zlevel 9 \
+  --resampling cubic \
+  MPF_V4_20251113144500.nc output/
+```
+
 ### 快速预览处理
 ```bash
 # 快速处理 + 适合快速浏览
@@ -113,7 +173,7 @@ nc2cog input.nc output/ --dry-run
 
 ### 恢复中断的处理
 ```bash
-# 从中断处恢复处理
+# 从中断处恢复处理（仅适用于批处理模式）
 nc2cog input.nc output/ --resume
 ```
 
@@ -262,3 +322,4 @@ nc2cog --config config_with_projection.yaml input.nc output/
 4. **对于大数据集**：使用多线程并合理设置 tile-size 和 block-size
 5. **对于小图像**：不需要过多的概览层级
 6. **对于大图像**：可以设置更多层级以获得更好的多尺度浏览体验
+7. **对于多维 NC 文件**：使用 `--dry-run` 预览将生成哪些输出文件

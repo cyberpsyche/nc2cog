@@ -11,9 +11,12 @@ from .processor import ProcessingEngine
 from .logger import setup_logger
 from .errors import NC2COGError
 from .analyzer import NCAnalyzer
+from .__version__ import __version__
 
 
 @click.command()
+@click.version_option(version=__version__, prog_name='nc2cog')
+@click.option('-V', is_flag=True, callback=lambda ctx, param, value: click.echo(f"nc2cog {__version__}") or ctx.exit(0) if value else None, expose_value=False, is_eager=True, help='Show version and exit')
 @click.argument('input_path', type=click.Path(exists=True, dir_okay=True, file_okay=True))
 @click.argument('output_path', type=click.Path(dir_okay=True, file_okay=True))
 @click.option('--config', '-c', type=click.Path(exists=True), help='Path to configuration file')

@@ -6,6 +6,12 @@ from typing import Dict, Optional
 
 import numpy as np
 
+# Coordinate variable names to exclude when searching for data variables
+_COORD_NAMES = frozenset({
+    'lat', 'lon', 'latitude', 'longitude', 'time', 'crs',
+    'x', 'y', 'spatial_ref', 'nav_lat', 'nav_lon',
+})
+
 try:
     from osgeo import gdal
     GDAL_AVAILABLE = True
@@ -193,9 +199,17 @@ class MetadataCollector:
     def _extract_source(
         self, nc_file: Path, variable_name: Optional[str]
     ) -> str:
-        """Extract source from netCDF global attributes, fallback to config."""
-        if not NETCDF4_AVAILABLE:
+        """Extract source from netCDF global attributes, fallback to config.
+
+        If a config-level source was explicitly set (e.g. via --metadata-source),
+        use it as the primary value instead of auto-detected attributes.
+        """
+        # If config explicitly set a source, use it first
+        if self.fallback_source:
             return self.fallback_source
+
+        if not NETCDF4_AVAILABLE:
+            return ''
 
         try:
             nc = netCDF4.Dataset(str(nc_file), 'r')
@@ -204,22 +218,31 @@ class MetadataCollector:
                     val = getattr(nc, attr, None)
                     if val and str(val).strip():
                         return str(val).strip()
-                return self.fallback_source
+                return ''
             finally:
                 nc.close()
         except Exception:
-            return self.fallback_source
+            return ''
 
     def _extract_unit(
         self, nc_file: Path, variable_name: Optional[str]
     ) -> str:
         """Extract unit from netCDF variable attributes, fallback to config."""
-        if variable_name and NETCDF4_AVAILABLE:
+        if NETCDF4_AVAILABLE:
             try:
                 nc = netCDF4.Dataset(str(nc_file), 'r')
                 try:
-                    if variable_name in nc.variables:
+                    # If variable_name provided, try it first
+                    if variable_name and variable_name in nc.variables:
                         var = nc.variables[variable_name]
+                        units = getattr(var, 'units', None)
+                        if units and str(units).strip():
+                            return str(units).strip()
+                    # Fallback: try to find any data variable with units
+                    for var_name in nc.variables:
+                        if var_name.lower() in _COORD_NAMES:
+                            continue
+                        var = nc.variables[var_name]
                         units = getattr(var, 'units', None)
                         if units and str(units).strip():
                             return str(units).strip()
@@ -236,7 +259,11 @@ def write_metadata_to_cog(cog_path: Path, metadata: Dict[str, str]):
     if not GDAL_AVAILABLE:
         raise ConversionError("GDAL is required to write metadata")
 
-    ds = gdal.Open(str(cog_path), gdal.GA_Update)
+    ds = gdal.OpenEx(
+        str(cog_path),
+        gdal.OF_UPDATE,
+        open_options=['IGNORE_COG_LAYOUT_BREAK=YES'],
+    )
     if ds is None:
         raise ConversionError(f"Cannot open COG file for metadata update: {cog_path}")
 

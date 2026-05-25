@@ -34,6 +34,8 @@ from .__version__ import __version__
 @click.option('--src-proj', type=str, help='Source projection in EPSG format (e.g., EPSG:4326)')
 @click.option('--dst-proj', type=str, help='Target projection in EPSG format (e.g., EPSG:3857)')
 @click.option('--variables', type=str, default=None, help='Variables to convert (comma-separated, e.g., PRE,REF)')
+@click.option('--metadata-source', type=str, default=None,
+              help='Data source description for metadata (e.g., satellite, sensor)')
 def main(
     input_path: str,
     output_path: str,
@@ -52,6 +54,7 @@ def main(
     src_proj: Optional[str],
     dst_proj: Optional[str],
     variables: Optional[str],
+    metadata_source: Optional[str],
 ) -> None:
     """
     Convert netCDF files to Cloud-Optimized GeoTIFF format.
@@ -93,6 +96,11 @@ def main(
         if src_proj:
             config_manager.config['projection'] = config_manager.config.get('projection', {})
             config_manager.config['projection']['source'] = src_proj
+
+        # Handle metadata source parameter
+        if metadata_source:
+            config_manager.config['metadata'] = config_manager.config.get('metadata', {})
+            config_manager.config['metadata']['source'] = metadata_source
 
         # Validate configuration
         config_manager.validate()

@@ -23,3 +23,10 @@ spatial_subset: null
 # Processing control
 overwrite: false
 skip_errors: true
+
+# Metadata
+metadata:
+  source: ""        # Data source description (fallback if not auto-detected)
+  offset: 0.0       # Data offset (radiometric correction)
+  scale: 1.0        # Data scale factor (radiometric correction)
+  unit: ""          # Data unit (fallback if not in variable attributes)

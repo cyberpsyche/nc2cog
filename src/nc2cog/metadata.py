@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
+import numpy as np
+
 try:
     from osgeo import gdal
     GDAL_AVAILABLE = True
@@ -16,6 +18,14 @@ try:
     NETCDF4_AVAILABLE = True
 except ImportError:
     NETCDF4_AVAILABLE = False
+
+from .errors import ConversionError, ValidationError
+from .logger import setup_logger
+
+logger = setup_logger()
+
+if GDAL_AVAILABLE:
+    gdal.UseExceptions()
 
 # GDAL data type index to name mapping
 _GDAL_TYPE_NAMES = {
@@ -64,16 +74,30 @@ class MetadataCollector:
         """Collect all metadata and return as a key-value dict."""
         metadata = {}
 
+        if not nc_file.exists():
+            raise ValidationError(f"NetCDF file not found: {nc_file}")
+
+        if not temp_tiff_path.exists():
+            raise ValidationError(f"Intermediate GeoTIFF not found: {temp_tiff_path}")
+
+        logger.info(f"Collecting metadata from {temp_tiff_path}")
+
         # Read from the intermediate GeoTIFF
         ds = gdal.Open(str(temp_tiff_path))
         if ds is None:
-            raise RuntimeError(f"Cannot open intermediate GeoTIFF: {temp_tiff_path}")
+            raise ConversionError(f"Cannot open intermediate GeoTIFF: {temp_tiff_path}")
 
         gt = ds.GetGeoTransform()
         projection = ds.GetProjection()
         width = ds.RasterXSize
         height = ds.RasterYSize
         band_count = ds.RasterCount
+
+        if band_count == 0:
+            ds = None
+            raise ConversionError(
+                f"No raster bands in intermediate GeoTIFF: {temp_tiff_path}"
+            )
 
         # Coordinate System
         if self.target_projection:
@@ -130,7 +154,6 @@ class MetadataCollector:
             band = ds.GetRasterBand(b)
             data = band.ReadAsArray()
             if data is not None:
-                import numpy as np
                 valid = data[~np.isnan(data)]
                 if len(valid) > 0:
                     band_min = float(np.min(valid))
@@ -156,9 +179,14 @@ class MetadataCollector:
         unit = self._extract_unit(nc_file, variable_name)
         metadata[FIELD_UNIT] = unit
 
-        # NODATA
-        metadata[FIELD_NODATA] = "-9999.0"
+        # NODATA — read from first band, fallback to -9999.0
+        first_band = ds.GetRasterBand(1)
+        nodata = first_band.GetNoDataValue()
+        if nodata is None:
+            nodata = -9999.0
+        metadata[FIELD_NODATA] = f"{nodata}"
 
+        ds.FlushCache()
         ds = None
         return metadata
 
@@ -206,11 +234,12 @@ class MetadataCollector:
 def write_metadata_to_cog(cog_path: Path, metadata: Dict[str, str]):
     """Open a COG file and write all metadata via GDAL SetMetadata."""
     if not GDAL_AVAILABLE:
-        raise RuntimeError("GDAL is required to write metadata")
+        raise ConversionError("GDAL is required to write metadata")
 
     ds = gdal.Open(str(cog_path), gdal.GA_Update)
     if ds is None:
-        raise RuntimeError(f"Cannot open COG file for metadata update: {cog_path}")
+        raise ConversionError(f"Cannot open COG file for metadata update: {cog_path}")
 
     ds.SetMetadata(metadata)
+    ds.FlushCache()
     ds = None  # Close and flush

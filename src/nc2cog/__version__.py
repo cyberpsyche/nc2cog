@@ -1,3 +1,8 @@
 """Version information for netCDF to COG TIFF converter."""
 
-__version__ = "0.1.2"
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("nc2cog")
+except PackageNotFoundError:
+    __version__ = "unknown"

@@ -1,0 +1,32 @@
+# Default configuration for netCDF to COG TIFF converter
+
+# Processing parameters
+compression: "deflate"
+zlevel: 6
+tile_size: [512, 512]
+block_size: [256, 256]
+
+# Projection parameters (disabled by default)
+projection: null
+
+# Output options
+overviews:
+  resampling: "nearest"
+  levels: [2, 4, 8, 16]
+
+# Variables to process (if multi-band output needed)
+variables: []
+
+# Spatial options
+spatial_subset: null
+
+# Processing control
+overwrite: false
+skip_errors: true
+
+# Metadata
+metadata:
+  source: ""        # Data source description (fallback if not auto-detected)
+  offset: 0.0       # Data offset (radiometric correction)
+  scale: 1.0        # Data scale factor (radiometric correction)
+  unit: ""          # Data unit (fallback if not in variable attributes)

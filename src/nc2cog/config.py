@@ -16,7 +16,7 @@ class ConfigManager:
         Args:
             config_path: Optional path to config file
         """
-        self.default_config_path = Path(__file__).parent.parent.parent / "config" / "default_config.yaml"
+        self.default_config_path = Path(__file__).parent / "config" / "default_config.yaml"
         self.user_config_path = config_path
 
         # Load and merge configurations

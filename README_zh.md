@@ -16,6 +16,8 @@
 - **断点恢复**：支持中断后恢复转换
 - **投影转换**：转换过程中支持坐标系重投影
 - **灵活输出**：可输出到目录或直接输出到指定的 `.tif` 文件
+- **丰富元数据**：自动向输出 COG 写入 18 个元数据字段（来源、范围、分辨率、最值、单位等）
+- **清洁 COG 布局**：元数据在转换流水线中写入，不进行创建后的文件二次修改，不破坏 COG 布局优化
 
 ## 📋 环境要求
 
@@ -92,7 +94,8 @@ nc2cog input.nc output/ \
   --tile-size 1024 \
   --block-size 512 \
   --resampling cubic \
-  --overview-levels 2,4,8,16,32
+  --overview-levels 2,4,8,16,32 \
+  --metadata-source "My Satellite Data"
 ```
 
 并行处理：
@@ -124,6 +127,7 @@ nc2cog input_dir/ output/ --threads 4
 - `--src-proj` 文本：源投影 EPSG 代码（如 EPSG:4326）
 - `--dst-proj` 文本：目标投影 EPSG 代码（如 EPSG:3857）
 - `--variables` 文本：指定要转换的变量名（逗号分隔，如 `PRE,REF`）。不指定时自动发现所有数据变量
+- `--metadata-source` 文本：自定义 COG 元数据的来源名称。不指定时从 netCDF 全局属性（`source`、`platform`、`institution`）中自动检测
 - `--version`, `-V`：显示版本信息并退出
 
 ## 📁 输出路径规则
@@ -162,6 +166,13 @@ overviews:
   resampling: "nearest"
   levels: [2, 4, 8, 16]
 
+# 元数据选项
+metadata:
+  source: ""        # 自定义来源名称（为空时从 netCDF 自动检测）
+  offset: 0.0       # 数据偏移量
+  scale: 1.0        # 数据缩放因子
+  unit: ""          # 数据单位（为空时从 netCDF 自动检测）
+
 # 处理控制
 overwrite: false
 skip_errors: true
@@ -176,6 +187,60 @@ skip_errors: true
 - **GTiff 驱动**：使用 `BLOCKXSIZE`/`BLOCKYSIZE` 而非 `TILEWIDTH`/`TILEHEIGHT`
 - **COG 驱动**：使用 `BLOCKSIZE` 而非 `BLOCKXSIZE`/`BLOCKYSIZE`
 - **概览处理**：优化避免 `COPY_SRC_OVERVIEWS` 冲突
+- **清洁 COG 布局**：元数据在 COG 转换**之前**写入中间 GeoTIFF。GDAL COG 驱动自动将元数据从源文件携带到输出，无需在创建后二次修改文件，从而消除 "IFD has been rewritten" 警告
+
+## 📋 COG 元数据
+
+每个输出的 COG 文件包含 18 个在转换流水线中写入的元数据字段：
+
+| 字段 | 说明 | 示例 |
+|------|------|------|
+| `Coordinate System` | 坐标系及投影信息 | `WGS84 (EPSG:4326)` |
+| `Band Count` | 波段数（时间步数） | `10` |
+| `Data Type` | 像素数据类型 | `Float32` |
+| `Resolution` | 像素分辨率（度） | `0.01000000` |
+| `Extent` | 边界框（minLon, minLat, maxLon, maxLat） | `97.095, 37.295, 126.105, 53.405` |
+| `Creation Time` | 转换的 UTC 时间戳 | `2026-05-26 12:08:29` |
+| `Source` | 数据来源名称 | `hfioi` |
+| `Compression` | 压缩算法 | `DEFLATE` |
+| `startX` / `startY` | 左上角坐标 | `97.095000` / `53.405000` |
+| `endX` / `endY` | 右下角坐标 | `126.105000` / `37.295000` |
+| `min` / `max` | 全局数据值范围 | `0.00` / `7.91` |
+| `offset` / `scale` | 线性变换参数 | `0.0000` / `1.0000` |
+| `unit` | 数据单位（来自 netCDF 变量属性） | `mm` |
+| `NODATA` | 无效值 | `nan` |
+
+### 数据来源配置
+
+`Source` 字段按以下优先级确定：
+
+1. **`--metadata-source` CLI 参数**（最高优先级）—— 显式设置来源名称
+2. **netCDF 全局属性** —— 从 `source`、`platform` 或 `institution` 属性中自动检测
+3. **空字符串**（默认回退值）
+
+```bash
+# 使用自定义来源名称
+nc2cog --metadata-source "风云四号卫星" input.nc output/
+
+# 从 netCDF 属性自动检测（默认行为）
+nc2cog input.nc output/
+```
+
+### 查看元数据
+
+```bash
+# 查看所有元数据字段
+gdalinfo output.tif
+
+# 以 JSON 格式查看元数据
+gdalinfo -json output.tif | python -c "
+import json, sys
+d = json.load(sys.stdin)
+m = d.get('metadata', {}).get('', {})
+for k, v in sorted(m.items()):
+    print(f'{k}: {v}')
+"
+```
 
 ## 🎯 使用场景
 

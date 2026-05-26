@@ -16,6 +16,8 @@ Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression
 - **Resume Capability**: Resume interrupted conversions
 - **Projection Transformation**: Reproject data from source to target coordinate systems during conversion
 - **Flexible Output**: Output to a directory or directly to a specified `.tif` file
+- **Rich Metadata**: 18 metadata fields automatically written to output COG (source, extent, resolution, min/max, unit, etc.)
+- **Clean COG Layout**: Metadata written during conversion pipeline — no post-creation modifications that break COG layout optimization
 
 ## 📋 Requirements
 
@@ -92,7 +94,8 @@ nc2cog input.nc output/ \
   --tile-size 1024 \
   --block-size 512 \
   --resampling cubic \
-  --overview-levels 2,4,8,16,32
+  --overview-levels 2,4,8,16,32 \
+  --metadata-source "My Satellite Data"
 ```
 
 With parallel processing:
@@ -124,6 +127,7 @@ nc2cog input_dir/ output/ --threads 4
 - `--src-proj` TEXT: Source projection in EPSG format (e.g., EPSG:4326)
 - `--dst-proj` TEXT: Target projection in EPSG format (e.g., EPSG:3857)
 - `--variables` TEXT: Variables to convert in multi-dimensional NC files (comma-separated, e.g., `PRE,REF`). If omitted, all data variables are auto-detected.
+- `--metadata-source` TEXT: Custom source name for COG metadata. If omitted, auto-detected from netCDF global attributes (`source`, `platform`, `institution`).
 - `--version`, `-V`: Show version information and exit.
 
 ## 📁 Output Path Rules
@@ -162,6 +166,13 @@ overviews:
   resampling: "nearest"
   levels: [2, 4, 8, 16]
 
+# Metadata options
+metadata:
+  source: ""        # Custom source name (auto-detected from netCDF if empty)
+  offset: 0.0       # Data offset
+  scale: 1.0        # Data scale factor
+  unit: ""          # Data unit (auto-detected from netCDF if empty)
+
 # Processing control
 overwrite: false
 skip_errors: true
@@ -176,6 +187,60 @@ This tool eliminates common GDAL warnings by using driver-appropriate parameters
 - **GTiff driver**: Uses `BLOCKXSIZE`/`BLOCKYSIZE` instead of `TILEWIDTH`/`TILEHEIGHT`
 - **COG driver**: Uses `BLOCKSIZE` instead of `BLOCKXSIZE`/`BLOCKYSIZE`
 - **Overview handling**: Optimized to avoid `COPY_SRC_OVERVIEWS` conflicts
+- **Clean COG Layout**: Metadata is written to the intermediate GeoTIFF **before** COG conversion. The GDAL COG driver automatically carries metadata from source to output, eliminating the need for post-creation file modifications that would break COG layout optimization (no "IFD has been rewritten" warnings).
+
+## 📋 COG Metadata
+
+Each output COG file contains 18 metadata fields written during the conversion pipeline:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `Coordinate System` | CRS with projection info | `WGS84 (EPSG:4326)` |
+| `Band Count` | Number of bands (time steps) | `10` |
+| `Data Type` | Pixel data type | `Float32` |
+| `Resolution` | Pixel resolution in degrees | `0.01000000` |
+| `Extent` | Bounding box (minLon, minLat, maxLon, maxLat) | `97.095, 37.295, 126.105, 53.405` |
+| `Creation Time` | UTC timestamp of conversion | `2026-05-26 12:08:29` |
+| `Source` | Data source name | `hfioi` |
+| `Compression` | Compression algorithm | `DEFLATE` |
+| `startX` / `startY` | Upper-left corner coordinates | `97.095000` / `53.405000` |
+| `endX` / `endY` | Lower-right corner coordinates | `126.105000` / `37.295000` |
+| `min` / `max` | Global data value range | `0.00` / `7.91` |
+| `offset` / `scale` | Linear transformation parameters | `0.0000` / `1.0000` |
+| `unit` | Data unit from netCDF variable | `mm` |
+| `NODATA` | No-data value | `nan` |
+
+### Metadata Source Configuration
+
+The `Source` field is determined by the following priority:
+
+1. **`--metadata-source` CLI parameter** (highest priority) — explicitly set source name
+2. **netCDF global attributes** — auto-detected from `source`, `platform`, or `institution` attributes
+3. **Empty string** (default fallback)
+
+```bash
+# Use custom source name
+nc2cog --metadata-source "FY-4 Satellite" input.nc output/
+
+# Auto-detect from netCDF attributes (default behavior)
+nc2cog input.nc output/
+```
+
+### Viewing Metadata
+
+```bash
+# View all metadata fields
+gdalinfo output.tif
+
+# View metadata as JSON
+gdalinfo -json output.tif | python -c "
+import json, sys
+d = json.load(sys.stdin)
+m = d.get('metadata', {}).get('', {})
+for k, v in sorted(m.items()):
+    print(f'{k}: {v}')
+"
+```
 
 ## 🎯 Use Cases
 

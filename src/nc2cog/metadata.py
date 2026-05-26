@@ -192,7 +192,6 @@ class MetadataCollector:
             nodata = -9999.0
         metadata[FIELD_NODATA] = f"{nodata}"
 
-        ds.FlushCache()
         ds = None
         return metadata
 
@@ -253,20 +252,3 @@ class MetadataCollector:
                 return self.fallback_unit
         return self.fallback_unit
 
-
-def write_metadata_to_cog(cog_path: Path, metadata: Dict[str, str]):
-    """Open a COG file and write all metadata via GDAL SetMetadata."""
-    if not GDAL_AVAILABLE:
-        raise ConversionError("GDAL is required to write metadata")
-
-    ds = gdal.OpenEx(
-        str(cog_path),
-        gdal.OF_UPDATE,
-        open_options=['IGNORE_COG_LAYOUT_BREAK=YES'],
-    )
-    if ds is None:
-        raise ConversionError(f"Cannot open COG file for metadata update: {cog_path}")
-
-    ds.SetMetadata(metadata)
-    ds.FlushCache()
-    ds = None  # Close and flush

@@ -22,25 +22,36 @@ Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression
 ## 📋 Requirements
 
 - Python 3.9+
-- GDAL library with Python bindings
-- click library for CLI handling
-- numpy for numerical operations
 
 ## 🛠️ Installation
 
+### From PyPI (Recommended)
+
+```bash
+pip install nc2cog
+```
+
+### From Source
+
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/cyberpsyche/nc2cog.git
 cd nc2cog
 
-# Install dependencies
-pip install -r requirements.txt
+# Install with uv
+uv pip install .
 
-# Install GDAL
-# On macOS: brew install gdal
-# On Ubuntu: sudo apt-get install gdal-bin libgdal-dev
-# On Windows: Use OSGeo4W installer
+# Or with pip
+pip install .
 ```
+
+### System Dependencies
+
+nc2cog requires GDAL with Python bindings:
+
+- **macOS**: `brew install gdal`
+- **Ubuntu**: `sudo apt-get install gdal-bin libgdal-dev`
+- **Windows**: Use OSGeo4W installer
 
 ## 🚀 Quick Start
 

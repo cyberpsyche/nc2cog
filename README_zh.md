@@ -22,25 +22,36 @@
 ## 📋 环境要求
 
 - Python 3.9+
-- GDAL 库及 Python 绑定
-- click 库（CLI 处理）
-- numpy（数值运算）
 
 ## 🛠️ 安装
 
+### 从 PyPI 安装（推荐）
+
+```bash
+pip install nc2cog
+```
+
+### 从源码安装
+
 ```bash
 # 克隆仓库
-git clone <repository-url>
+git clone https://github.com/cyberpsyche/nc2cog.git
 cd nc2cog
 
-# 安装依赖
-pip install -r requirements.txt
+# 使用 uv 安装
+uv pip install .
 
-# 安装 GDAL
-# macOS: brew install gdal
-# Ubuntu: sudo apt-get install gdal-bin libgdal-dev
-# Windows: 使用 OSGeo4W 安装器
+# 或使用 pip
+pip install .
 ```
+
+### 系统依赖
+
+nc2cog 需要 GDAL 及 Python 绑定：
+
+- **macOS**: `brew install gdal`
+- **Ubuntu**: `sudo apt-get install gdal-bin libgdal-dev`
+- **Windows**: 使用 OSGeo4W 安装器
 
 ## 🚀 快速开始
 

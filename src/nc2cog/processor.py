@@ -9,7 +9,7 @@ import numpy as np
 from .logger import setup_logger
 from .errors import ConversionError, ValidationError
 from .config import ConfigManager
-from .metadata import MetadataCollector, write_metadata_to_cog
+from .metadata import MetadataCollector
 
 # Try to import netCDF4
 try:
@@ -134,6 +134,18 @@ class ProcessingEngine:
                         temp_dataset.BuildOverviews(resampling, levels)
                         temp_dataset = None  # Properly close dataset to release file handle
 
+                # Write metadata to intermediate GeoTIFF before COG conversion
+                # GDAL COG driver carries metadata from source to output
+                try:
+                    collector = MetadataCollector(self.config)
+                    nc_meta = collector.collect(input_file, temp_path)
+                    temp_ds = gdal.Open(str(temp_path), gdal.GA_Update)
+                    if temp_ds is not None:
+                        temp_ds.SetMetadata(nc_meta)
+                        temp_ds = None
+                except Exception as meta_err:
+                    self.logger.warning(f"Failed to write metadata: {meta_err}")
+
                 # Convert to COG format - handle overviews properly in COG creation
                 # Note: COG driver supports different parameters than GTiff
                 cog_creation_options = [
@@ -153,14 +165,6 @@ class ProcessingEngine:
                     format='COG',
                     creationOptions=cog_creation_options
                 )
-
-                # Write metadata to the output COG
-                try:
-                    collector = MetadataCollector(self.config)
-                    nc_meta = collector.collect(input_file, temp_path)
-                    write_metadata_to_cog(output_file, nc_meta)
-                except Exception as meta_err:
-                    self.logger.warning(f"Failed to write metadata: {meta_err}")
 
                 self.logger.info(f"Successfully converted: {input_file}")
                 return True

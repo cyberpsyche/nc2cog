@@ -21,7 +21,7 @@
 
 ## 📋 环境要求
 
-- Python 3.7+
+- Python 3.9+
 - GDAL 库及 Python 绑定
 - click 库（CLI 处理）
 - numpy（数值运算）

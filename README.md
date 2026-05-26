@@ -21,7 +21,7 @@ Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression
 
 ## 📋 Requirements
 
-- Python 3.7+
+- Python 3.9+
 - GDAL library with Python bindings
 - click library for CLI handling
 - numpy for numerical operations

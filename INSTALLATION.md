@@ -7,7 +7,7 @@ nc2cog is a command-line tool for converting netCDF files to Cloud-Optimized Geo
 ## Prerequisites
 
 ### System Requirements
-- Python 3.7 or higher
+- Python 3.9 or higher
 - GDAL library with Python bindings
 - Sufficient disk space for temporary files during conversion
 - Appropriate permissions for input/output directories

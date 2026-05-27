@@ -57,7 +57,7 @@ FIELD_MIN = "min"
 FIELD_OFFSET = "offset"
 FIELD_SCALE = "scale"
 FIELD_UNIT = "unit"
-FIELD_NODATA = "NODATA"
+FIELD_NODATA = "NoData"
 
 
 class MetadataCollector:
@@ -185,7 +185,7 @@ class MetadataCollector:
         unit = self._extract_unit(nc_file, variable_name)
         metadata[FIELD_UNIT] = unit
 
-        # NODATA — read from first band, fallback to -9999.0
+        # NoData — read from first band, fallback to -9999.0
         first_band = ds.GetRasterBand(1)
         nodata = first_band.GetNoDataValue()
         if nodata is None:

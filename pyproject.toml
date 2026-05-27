@@ -1,6 +1,6 @@
 [project]
 name = "nc2cog"
-version = "0.1.4"
+version = "0.1.5"
 description = "Convert netCDF files to Cloud-Optimized GeoTIFF format with advanced compression"
 readme = "README.md"
 license = {text = "MIT"}

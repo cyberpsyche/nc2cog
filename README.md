@@ -219,7 +219,7 @@ Each output COG file contains 18 metadata fields written during the conversion p
 | `min` / `max` | Global data value range | `0.00` / `7.91` |
 | `offset` / `scale` | Linear transformation parameters | `0.0000` / `1.0000` |
 | `unit` | Data unit from netCDF variable | `mm` |
-| `NODATA` | No-data value | `nan` |
+| `NoData` | No-data value | `-9999.0` |
 
 ### Metadata Source Configuration
 

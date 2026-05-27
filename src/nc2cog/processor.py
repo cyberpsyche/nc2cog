@@ -350,11 +350,11 @@ class ProcessingEngine:
                 # Fill value handling
                 fill_value = getattr(var, '_FillValue', None)
                 if fill_value is not None:
-                    data = np.where(data == fill_value, np.nan, data)
+                    data = np.where(data == fill_value, -9999.0, data)
 
                 band = temp_ds.GetRasterBand(t + 1)
                 band.WriteArray(data.astype(np.float32))
-                band.SetNoDataValue(np.nan)
+                band.SetNoDataValue(-9999.0)
                 if t < len(time_descs):
                     band.SetDescription(time_descs[t])
                 band.FlushCache()

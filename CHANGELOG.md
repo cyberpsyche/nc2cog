@@ -2,6 +2,17 @@
 
 All notable changes to the nc2cog project will be documented in this file.
 
+## [0.1.6] - 2026-06-27
+
+### Fixed
+- Coordinate variable `z` (and other CF-compliant 1D coordinate variables
+  like `height`, `depth`, `level`, `pressure`) no longer incorrectly treated
+  as data variables. Added CF-1.8 convention check: a variable whose only
+  dimension shares its name is automatically excluded.
+- Multi-dimensional netCDF files with extra singleton dimensions (e.g.
+  `(time, z=1, y, x)`) now convert successfully. Non-spatial singleton
+  dimensions are squeezed before writing raster bands.
+
 ## [Unreleased] - YYYY-MM-DD
 
 ### Added

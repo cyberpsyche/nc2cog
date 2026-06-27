@@ -73,6 +73,10 @@ class NCAnalyzer:
                 var = nc.variables[name]
                 # Must be at least 1D and not a scalar metadata variable
                 if var.ndim >= 1 and len(var.dimensions) >= 1:
+                    # CF convention: a variable whose only dimension has the
+                    # same name as the variable is a coordinate variable
+                    if len(var.dimensions) == 1 and var.dimensions[0] == name:
+                        continue
                     data_vars.append(name)
             return sorted(data_vars)
         finally:

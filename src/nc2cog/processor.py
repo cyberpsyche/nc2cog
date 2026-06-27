@@ -347,6 +347,14 @@ class ProcessingEngine:
                     slices[dims.index(time_dim_name)] = t
                     data = var[tuple(slices)]
 
+                # Remove singleton dimensions (e.g. z=1) so data is 2D
+                data = np.squeeze(data)
+                if data.ndim != 2:
+                    raise ConversionError(
+                        f"Expected 2D data after squeezing, got {data.ndim}D "
+                        f"with shape {data.shape} for variable {var_name}"
+                    )
+
                 # Fill value handling
                 fill_value = getattr(var, '_FillValue', None)
                 if fill_value is not None:

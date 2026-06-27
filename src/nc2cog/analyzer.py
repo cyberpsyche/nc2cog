@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 
 # Coordinate variables to exclude from data variables
-_COORD_NAMES = frozenset({
+COORD_NAMES = frozenset({
     'lat', 'lon', 'latitude', 'longitude', 'time', 'crs',
     'x', 'y', 'spatial_ref', 'nav_lat', 'nav_lon',
 })
@@ -68,7 +68,7 @@ class NCAnalyzer:
             # and exclude known coordinate variables
             data_vars = []
             for name in nc.variables:
-                if name.lower() in _COORD_NAMES:
+                if name.lower() in COORD_NAMES:
                     continue
                 var = nc.variables[name]
                 # Must be at least 1D and not a scalar metadata variable

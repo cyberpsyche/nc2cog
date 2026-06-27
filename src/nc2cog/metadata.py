@@ -6,12 +6,6 @@ from typing import Dict, Optional
 
 import numpy as np
 
-# Coordinate variable names to exclude when searching for data variables
-_COORD_NAMES = frozenset({
-    'lat', 'lon', 'latitude', 'longitude', 'time', 'crs',
-    'x', 'y', 'spatial_ref', 'nav_lat', 'nav_lon',
-})
-
 try:
     from osgeo import gdal
     GDAL_AVAILABLE = True
@@ -25,6 +19,7 @@ try:
 except ImportError:
     NETCDF4_AVAILABLE = False
 
+from .analyzer import COORD_NAMES
 from .errors import ConversionError, ValidationError
 from .logger import setup_logger
 
@@ -239,7 +234,7 @@ class MetadataCollector:
                             return str(units).strip()
                     # Fallback: try to find any data variable with units
                     for var_name in nc.variables:
-                        if var_name.lower() in _COORD_NAMES:
+                        if var_name.lower() in COORD_NAMES:
                             continue
                         var = nc.variables[var_name]
                         units = getattr(var, 'units', None)
